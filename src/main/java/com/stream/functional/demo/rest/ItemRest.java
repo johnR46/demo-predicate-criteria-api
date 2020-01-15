@@ -58,16 +58,38 @@ public class ItemRest {
 //
 //    }
 
-    public List<Item> findByCriteria(String name) {
+    public List<Item> findByCriteria(String grade, String color) {
         return this.itemReposistory.findAll(new Specification<Item>() {
             @Override
             public Predicate toPredicate(Root<Item> root, CriteriaQuery<?> query, CriteriaBuilder criteriaBuilder) {
 
                 List<Predicate> predicates = new ArrayList<>();
-                if (name != null) {
-                    predicates.add(criteriaBuilder.equal(root.get("name"), name));
 
-                }
+                // JPA dynamic with equal and like (
+                /*
+                select * from item where
+                 color like '%'a'%'  and grade = 'a'
+                 */
+
+//                if (color != null) {
+//                    predicates.add(criteriaBuilder.and(criteriaBuilder.like(root.get("color"), "%" + color + "%")));
+//                }
+//                if (grade != null) {
+//                    predicates.add(criteriaBuilder.and(criteriaBuilder.equal(root.get("grade"), grade)));
+//                }
+
+                //JPA dynamic like for multiple fields or field
+
+                  /*
+                select * from item where
+                 color like '%'a'%'  or grade = '%a%'
+                 */
+                predicates.add(criteriaBuilder.or(
+                        criteriaBuilder.like(root.get("grade"), "%" + grade + "%"),
+                        criteriaBuilder.like(root.get("color"), "%" + color + "%")
+                ));
+
+
                 return criteriaBuilder.and(predicates.toArray(new Predicate[predicates.size()]));
             }
         });
@@ -75,7 +97,8 @@ public class ItemRest {
 
     @GetMapping("/find-all")
     public ResponseEntity<?> findall() {
-        return ResponseEntity.ok().body(findByCriteria("k"));
+        // null to find all
+        return ResponseEntity.ok().body(findByCriteria("", ""));
     }
 
 }
